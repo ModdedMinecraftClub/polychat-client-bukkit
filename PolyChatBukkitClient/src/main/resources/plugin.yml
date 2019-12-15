@@ -1,0 +1,10 @@
+name: polychatbukkit
+main: club.moddedminecraft.polychat.bukkitclient.BukkitClient
+version: 0.0.1
+commands:
+   test:
+      description: This is a demo command.
+      usage: /<command> [player]
+      permission: polychat.basic
+      permission-message: You don't have <permission>
+      default: true
