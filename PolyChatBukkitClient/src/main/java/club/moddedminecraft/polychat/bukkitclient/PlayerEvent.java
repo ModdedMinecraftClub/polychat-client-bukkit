@@ -18,13 +18,13 @@ public class PlayerEvent {
     		System.out.println(serverId + player.getName()+" has left the game");
     	}
     	if(eventType == "start") {
-    		System.out.println(serverId + " Server Online");
+    		System.out.println(serverId + "Server Online");
     	}
     	if(eventType == "stop") {
-    		System.out.println(serverId + " Server Offline");
+    		System.out.println(serverId + "Server Offline");
     	}
     	if(eventType == "crash") {
-    		System.out.println(serverId + " Server Crashing");
+    		System.out.println(serverId + "Server Crashed");
     	}
        
     }

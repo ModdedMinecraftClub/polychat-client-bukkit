@@ -18,17 +18,13 @@ public class EventListener implements Listener{
 	@EventHandler
 	public void onChat(AsyncPlayerChatEvent event) {
 		Player player = event.getPlayer();
-		player.sendMessage(event.getMessage());
 		new PlayerEvent(player,"chat",event);
-		
-		//event.getPlugin().getLogger().info("Player " + event.getPlayer().getName() + " has said something");
 	}
 	@EventHandler
 	public void onJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
 		new PlayerEvent(player,"join",null);
 		
-		//event.getPlugin().getLogger().info("Player " + event.getPlayer().getName() + " has said something");
 	}
 	@EventHandler
 	public void onLeave(PlayerQuitEvent event) {

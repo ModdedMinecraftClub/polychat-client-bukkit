@@ -26,11 +26,7 @@ public final class BukkitClient extends JavaPlugin implements Listener{
     	shutdownClean = true;
     	new PlayerEvent(null,"stop",null);
     }
-    
-    @EventHandler
-    public void onJoin(PlayerJoinEvent event) {
-    	getLogger().info("Player " + event.getPlayer().getName() + " is logging in");
-    }
+   
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
