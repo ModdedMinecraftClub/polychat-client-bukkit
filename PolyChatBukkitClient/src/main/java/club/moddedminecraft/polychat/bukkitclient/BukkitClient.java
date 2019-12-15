@@ -10,15 +10,21 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class BukkitClient extends JavaPlugin implements Listener{
+	
+	public static boolean shutdownClean = false;
+	
     @Override
     public void onEnable() {
-    	getLogger().info("onEnable has been invoked!");
     	new EventListener(this);
+    	new PlayerEvent(null,"start",null);
+    	Runtime.getRuntime().addShutdownHook(new Thread(this::shutdownHook));
     }
     
     @Override
     public void onDisable() {
     	getLogger().info("onDisable has been invoked!");
+    	shutdownClean = true;
+    	new PlayerEvent(null,"stop",null);
     }
     
     @EventHandler
@@ -33,6 +39,19 @@ public final class BukkitClient extends JavaPlugin implements Listener{
     		return true;
     	} //If this has happened the function will return true. 
     	return false; 
+    }
+    
+    public void shutdownHook() {
+
+        //Sends either crashed or offline depending on if shutdown happened cleanly
+        if (!shutdownClean) {
+        	new PlayerEvent(null,"crash",null);
+        }
+        try {
+            //Makes sure message has time to send
+            Thread.sleep(1000);
+        } catch (InterruptedException ignored) {
+        }
     }
 
 }
