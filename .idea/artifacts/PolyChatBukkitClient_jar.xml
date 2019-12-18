@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="PolyChatBukkitClient:jar">
+    <output-path>$PROJECT_DIR$/../../Spigot/plugins/artifacts/PolyChatBukkitClient_jar</output-path>
+    <root id="archive" name="PolyChatBukkitClient.jar">
+      <element id="module-output" name="PolyChatBukkitClient" />
+      <element id="extracted-dir" path="$USER_HOME$/Downloads/spigot-api-1.14.4-R0.1-20191210.224154-92.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/libs/NetworkLibrary.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
