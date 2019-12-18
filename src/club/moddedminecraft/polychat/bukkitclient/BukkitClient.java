@@ -11,8 +11,6 @@ import java.util.Properties;
 import club.moddedminecraft.polychat.networking.io.*;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.*;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -46,6 +44,10 @@ public final class BukkitClient extends JavaPlugin implements Listener{
         } catch (NullPointerException ignored) {}
     }
 
+    public static void sendGameMessage(String message) {
+        Bukkit.broadcastMessage(message);
+    }
+
     @Override
     public void onEnable() {
         //TODO: check if the folder exists
@@ -65,24 +67,12 @@ public final class BukkitClient extends JavaPlugin implements Listener{
     
     @Override
     public void onDisable() {
-    	getLogger().info("onDisable has been invoked!");
     	shutdownClean = true;
         ServerStatusMessage offlineMsg = new ServerStatusMessage(properties.getProperty("server_id"), idJson, (short) 2);
         sendMessage(offlineMsg);
 
     }
-   
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-    	if (cmd.getName().equalsIgnoreCase("test")) { 
-    		getLogger().info("Test has been invoked!");
-            ServerStatusMessage offlineMsg = new ServerStatusMessage(properties.getProperty("server_id"), idJson, (short) 2);
-            sendMessage(offlineMsg);
-    		return true;
-    	} //If this has happened the function will return true. 
-    	return false; 
-    }
     
     public void shutdownHook() {
         reattachThread.interrupt();
@@ -112,10 +102,6 @@ public final class BukkitClient extends JavaPlugin implements Listener{
 		return Bukkit.getMaxPlayers();
 	}
 
-	public static void sendGameMessage(String message) {
-		Bukkit.broadcastMessage(message);
-		
-	}
 
 	public static ChatColor colorSwitch(int colorInt){
         switch(colorInt){
@@ -178,7 +164,7 @@ public final class BukkitClient extends JavaPlugin implements Listener{
             }
 
             idText = color + "" + idText;
-            idJson = "{idText}";
+            idJson = idText;
         }
     }
 
