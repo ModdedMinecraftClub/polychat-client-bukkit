@@ -100,6 +100,14 @@ public final class BukkitClient extends JavaPlugin implements Listener{
         ServerStatusMessage offlineMsg = new ServerStatusMessage(properties.getProperty("server_id"), idJson, (short) 2);
         sendMessage(offlineMsg);
 
+        try {
+            //Makes sure message has time to send
+            Thread.sleep(2000);
+        } catch (InterruptedException ignored) {
+        }
+
+        messageBus.stop();
+
         //TODO: Close Threads
 
     }
