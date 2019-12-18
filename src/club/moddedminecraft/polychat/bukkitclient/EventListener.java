@@ -99,13 +99,13 @@ public class EventListener implements Listener{
 			String command = ((CommandMessage) message).getCommand();
 			String channel = ((CommandMessage) message).getChannel();
 			String serverID = ((CommandMessage) message).getServerID();
-			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+			BukkitClient.addCommand(command);
 			// send command output to discord in .5 seconds
 			new Timer().schedule(new TimerTask() { //TODO: Command output returning
 				@Override
 				public void run() {
 					Object sender = null;
-					Bukkit.broadcastMessage("Placeholder");
+					//BukkitClient.sendMessage("Placeholder");
 				}
 			}, 500);
 		}

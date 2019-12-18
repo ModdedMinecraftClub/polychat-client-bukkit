@@ -17,6 +17,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import club.moddedminecraft.polychat.bukkitclient.threads.ActivePlayerThread;
 import club.moddedminecraft.polychat.bukkitclient.threads.ReattachThread;
+import org.bukkit.scheduler.BukkitScheduler;
 
 public final class BukkitClient extends JavaPlugin implements Listener{
 	
@@ -28,6 +29,7 @@ public final class BukkitClient extends JavaPlugin implements Listener{
     public static String idJson = null;
     public static String idJsonNoColor = null;
 	public static String serverIdText = null;
+	public static ArrayList<String> commands = new ArrayList<>();
 
     public static void handleClientConnection() {
         try {
@@ -49,6 +51,13 @@ public final class BukkitClient extends JavaPlugin implements Listener{
         Bukkit.broadcastMessage(message);
     }
 
+    public static void runCommand(String command) {  //Command Firer
+        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+    }
+    public static void addCommand(String command) {  //Holding place for commands
+        commands.add(command);
+    }
+
     @Override
     public void onEnable() {
         //TODO: check if the folder exists
@@ -61,9 +70,28 @@ public final class BukkitClient extends JavaPlugin implements Listener{
     	new EventListener(this);
 
     	Runtime.getRuntime().addShutdownHook(new Thread(this::shutdownHook));
+        ServerInfoMessage infoMessage = new ServerInfoMessage(BukkitClient.properties.getProperty("server_id", "DEFAULT_ID"),
+                BukkitClient.properties.getProperty("server_name", "DEFAULT_NAME"),
+                BukkitClient.properties.getProperty("server_address", "DEFAULT_ADDRESS"), BukkitClient.getMaxPlayers());
+        BukkitClient.sendMessage(infoMessage);
 
         ServerStatusMessage onlineMsg = new ServerStatusMessage(properties.getProperty("server_id"), idJson, (short) 1);
         sendMessage(onlineMsg);
+
+        BukkitScheduler scheduler = getServer().getScheduler();
+        scheduler.scheduleSyncRepeatingTask(this, new Runnable() { //Repeating task for listening for commands so they are ran on the right thread
+            @Override
+            public void run() {
+                if (commands.size() != 0) {
+                    int i = 0;
+                    while(i<commands.size()){
+                        runCommand(commands.get(i));
+                        i++;
+                    }
+                    commands.clear();
+                }
+            }
+        }, 0L, 20L);
     }
     
     @Override
@@ -71,6 +99,8 @@ public final class BukkitClient extends JavaPlugin implements Listener{
     	shutdownClean = true;
         ServerStatusMessage offlineMsg = new ServerStatusMessage(properties.getProperty("server_id"), idJson, (short) 2);
         sendMessage(offlineMsg);
+
+        //TODO: Close Threads
 
     }
 
