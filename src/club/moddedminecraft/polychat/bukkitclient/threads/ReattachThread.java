@@ -25,7 +25,6 @@ public class ReattachThread extends HeartbeatThread {
     @Override
     protected void run() throws InterruptedException, IOException {
         try {
-
             if (BukkitClient.messageBus == null || (BukkitClient.messageBus.isSocketClosed())) {
                 //Tells players ingame that the connection failed
                 if (isConnected) {

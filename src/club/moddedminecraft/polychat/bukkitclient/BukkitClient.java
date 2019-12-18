@@ -64,6 +64,7 @@ public final class BukkitClient extends JavaPlugin implements Listener{
         handleConfiguration(this.getDataFolder());
         handlePrefix();
         reattachThread = new ReattachThread(5000);
+        reattachThread.start(); //actually start the thread
         playerThread = new ActivePlayerThread(30000, properties.getProperty("server_id", "DEFAULT_ID"));
         handleClientConnection();
         
