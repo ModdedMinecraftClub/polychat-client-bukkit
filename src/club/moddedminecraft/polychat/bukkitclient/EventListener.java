@@ -24,6 +24,7 @@ public class EventListener implements Listener{
 
 	@EventHandler
 	public void onChat(AsyncPlayerChatEvent event) {
+		event.setFormat(BukkitClient.idJson + "" + event.getFormat());
 		String id = BukkitClient.properties.getProperty("server_id");
 		String json = BukkitClient.idJson + " " +event.getPlayer().getDisplayName() + ": "+ event.getMessage();  //TODO: Fix this JSON encoding
 		ChatMessage chatMessage = new ChatMessage(event.getPlayer().getDisplayName(), event.getMessage(), json);
@@ -59,8 +60,8 @@ public class EventListener implements Listener{
 		} else if (message instanceof ChatMessage) {
 			ChatMessage chatMessage = (ChatMessage) message;
 			if (chatMessage.getComponentJson().equals("empty")) {
-				String prefix = "[Discord] "; //Sets prefix to discord
-				ChatColor colorType = ChatColor.DARK_PURPLE; //Sets colorType to Dark Purple for the rest of a discord message
+				String prefix = ChatColor.DARK_PURPLE + "" +"[Discord] "; //Sets prefix to discord
+				ChatColor colorType = ChatColor.WHITE; //Sets colorType to Dark Purple for the rest of a discord message
 				finalMessage = prefix + "" + colorType + "" + chatMessage.getUsername() + " " + chatMessage.getMessage(); //Appends the color, username and message to the finalMessage
 			} else {
 				finalMessage = chatMessage.getComponentJson();//TODO: Fix the JSON decoding
