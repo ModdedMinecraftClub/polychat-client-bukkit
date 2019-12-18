@@ -27,7 +27,7 @@ public final class BukkitClient extends JavaPlugin implements Listener{
     public static ActivePlayerThread playerThread;
     public static String idJson = null;
     public static String idJsonNoColor = null;
-	public static Object serverIdText = null;
+	public static String serverIdText = null;
 
     public static void handleClientConnection() {
         try {

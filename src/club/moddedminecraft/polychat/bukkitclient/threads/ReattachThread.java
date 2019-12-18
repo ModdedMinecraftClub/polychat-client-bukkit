@@ -65,15 +65,15 @@ public class ReattachThread extends HeartbeatThread {
         		BukkitClient.properties.getProperty("server_address", "DEFAULT_ADDRESS"), BukkitClient.getMaxPlayers());
         BukkitClient.sendMessage(infoMessage);
         //Reports the server as online and ready to receive players
-        //ServerStatusMessage statusMessage = new ServerStatusMessage(BukkitClient.properties.getProperty("server_id"),
-                //ITextComponent.Serializer.componentToJson(BukkitClient.serverIdText), (short) 1);
-        //BukkitClient.sendMessage(statusMessage);
+        String id = BukkitClient.idJson;
+        ServerStatusMessage statusMessage = new ServerStatusMessage(BukkitClient.properties.getProperty("server_id"),id, (short) 1);
+        BukkitClient.sendMessage(statusMessage);
     }
 
 
     //Sends a list of all online players silently for auto reconnect
-    public void sendOnlinePlayers() { //TODO
-        ArrayList<String> playerList = new ArrayList<>();
+    public void sendOnlinePlayers() { //TODO: Check this
+        ArrayList<String> playerList;
         playerList = BukkitClient.getOnlinePlayersNames();
         PlayerListMessage message = new PlayerListMessage(BukkitClient.properties.getProperty("server_id"), playerList);
         BukkitClient.sendMessage(message);
