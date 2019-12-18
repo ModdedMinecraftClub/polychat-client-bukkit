@@ -24,10 +24,10 @@ public class EventListener implements Listener{
 
 	@EventHandler
 	public void onChat(AsyncPlayerChatEvent event) {
-		event.setFormat(BukkitClient.idJson + "" + event.getFormat());
+		event.setFormat(BukkitClient.idJson + " " + event.getFormat());
 		String id = BukkitClient.properties.getProperty("server_id");
 		String json = BukkitClient.idJson + " " +event.getPlayer().getDisplayName() + ": "+ event.getMessage();  //TODO: Fix this JSON encoding
-		ChatMessage chatMessage = new ChatMessage(event.getPlayer().getDisplayName(), event.getMessage(), json);
+		ChatMessage chatMessage = new ChatMessage(BukkitClient.idJsonNoColor + " " + event.getPlayer().getDisplayName(), event.getMessage(), json);
 		BukkitClient.sendMessage(chatMessage);
 	}
 	@EventHandler

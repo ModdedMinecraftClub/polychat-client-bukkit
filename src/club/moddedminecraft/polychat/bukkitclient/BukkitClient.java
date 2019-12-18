@@ -26,6 +26,7 @@ public final class BukkitClient extends JavaPlugin implements Listener{
     public static ReattachThread reattachThread;
     public static ActivePlayerThread playerThread;
     public static String idJson = null;
+    public static String idJsonNoColor = null;
 	public static Object serverIdText = null;
 
     public static void handleClientConnection() {
@@ -162,7 +163,7 @@ public final class BukkitClient extends JavaPlugin implements Listener{
             } else {
                 color = colorSwitch(code);
             }
-
+            idJsonNoColor = idText;
             idText = color + "" + idText;
             idJson = idText;
         }
