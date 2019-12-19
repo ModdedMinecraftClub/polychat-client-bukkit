@@ -28,6 +28,7 @@ public final class BukkitClient extends JavaPlugin implements Listener{
     public static ActivePlayerThread playerThread;
     public static String idJson = null;
     public static String idJsonNoColor = null;
+    public static boolean reattachKill = false;
 	public static String serverIdText = null;
 	public static ArrayList<String> commands = new ArrayList<>();
 
@@ -63,17 +64,23 @@ public final class BukkitClient extends JavaPlugin implements Listener{
         //TODO: check if the folder exists
         handleConfiguration(this.getDataFolder());
         handlePrefix();
-        reattachThread = new ReattachThread(5000);
 
+        reattachThread = new ReattachThread(5000);
         playerThread = new ActivePlayerThread(30000, properties.getProperty("server_id", "DEFAULT_ID"));
+
         handleClientConnection();
-        
+
     	new EventListener(this);
 
     	Runtime.getRuntime().addShutdownHook(new Thread(this::shutdownHook));
-        ServerInfoMessage infoMessage = new ServerInfoMessage(BukkitClient.properties.getProperty("server_id", "DEFAULT_ID"),
+
+        ServerInfoMessage infoMessage = new ServerInfoMessage(
+                BukkitClient.properties.getProperty("server_id", "DEFAULT_ID"),
                 BukkitClient.properties.getProperty("server_name", "DEFAULT_NAME"),
-                BukkitClient.properties.getProperty("server_address", "DEFAULT_ADDRESS"), BukkitClient.getMaxPlayers());
+                BukkitClient.properties.getProperty("server_address", "DEFAULT_ADDRESS"),
+                BukkitClient.getMaxPlayers()
+        );
+
         BukkitClient.sendMessage(infoMessage);
 
         ServerStatusMessage onlineMsg = new ServerStatusMessage(properties.getProperty("server_id"), idJson, (short) 1);
@@ -93,13 +100,18 @@ public final class BukkitClient extends JavaPlugin implements Listener{
                 }
             }
         }, 0L, 20L);
+        if(!reattachKill) { //only start it on a fresh start, not on a reload
+            reattachThread.start();//actually start the thread at the end so the main thread is running already
+        }else{
 
-        reattachThread.start(); //actually start the thread at the end so the main thread is running already
+        }
     }
     
     @Override
     public void onDisable() {
     	shutdownClean = true;
+        reattachKill = true;
+
         ServerStatusMessage offlineMsg = new ServerStatusMessage(properties.getProperty("server_id"), idJson, (short) 2);
         sendMessage(offlineMsg);
 
@@ -117,8 +129,6 @@ public final class BukkitClient extends JavaPlugin implements Listener{
 
     
     public void shutdownHook() {
-        reattachThread.interrupt();
-        playerThread.interrupt();
         //Sends either crashed or offline depending on if shutdown happened cleanly
         if (!shutdownClean) {
             ServerStatusMessage crashMsg = new ServerStatusMessage(properties.getProperty("server_id"), idJson, (short) 3);
@@ -129,6 +139,7 @@ public final class BukkitClient extends JavaPlugin implements Listener{
             Thread.sleep(1000);
         } catch (InterruptedException ignored) {
         }
+        messageBus.stop();
     }
 
 	public static ArrayList<String> getOnlinePlayersNames() { //Might have to fix return type

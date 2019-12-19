@@ -14,6 +14,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import static club.moddedminecraft.polychat.bukkitclient.BukkitClient.reattachKill;
+
 public class ReattachThread extends HeartbeatThread {
 
     private boolean isConnected = true;
@@ -25,31 +27,36 @@ public class ReattachThread extends HeartbeatThread {
     @Override
     protected void run() throws InterruptedException, IOException {
         try {
-            if (BukkitClient.messageBus == null || (BukkitClient.messageBus.isSocketClosed())) {
-                //Tells players ingame that the connection failed
-                if (isConnected) {
-                    isConnected = false; //TODO
-                    BukkitClient.sendGameMessage("[PolyChat] Lost connection to main server, attempting reconnect...");
+            if(!reattachKill) {
+                if (BukkitClient.messageBus == null || (BukkitClient.messageBus.isSocketClosed())) {
+
+                    System.out.println("Firing reattach");
+
+                    //Tells players ingame that the connection failed
+                    if (isConnected) {
+                        isConnected = false; //TODO
+                        BukkitClient.sendGameMessage("[PolyChat] Lost connection to main server, attempting reconnect...");
+                    }
+
+                    //Stops threads if they are still running
+                    if (BukkitClient.messageBus != null) BukkitClient.messageBus.stop();
+
+                    //Attempts to start the connection //TODO
+                    BukkitClient.messageBus = new MessageBus(new Socket(BukkitClient.properties.getProperty("address"), Integer.parseInt(BukkitClient.properties.getProperty("port"))), EventListener::handleMessage);
+                    BukkitClient.messageBus.start();
+
+                    //If the socket was reopened, wait 3 seconds to make sure sending online message works
+                    if (!BukkitClient.messageBus.isSocketClosed()) {
+                        Thread.sleep(2000); //TODO
+                        BukkitClient.sendGameMessage("[PolyChat] Connection re-established!");
+                        sendServerOnline();
+                        Thread.sleep(1000);
+                        sendOnlinePlayers();
+                        isConnected = true;
+                    }
                 }
-
-                //Stops threads if they are still running
-                if (BukkitClient.messageBus != null) BukkitClient.messageBus.stop();
-
-                //Attempts to start the connection //TODO
-                BukkitClient.messageBus = new MessageBus(new Socket(BukkitClient.properties.getProperty("address"), Integer.parseInt(BukkitClient.properties.getProperty("port"))), EventListener::handleMessage);
-                BukkitClient.messageBus.start();
-
-                //If the socket was reopened, wait 3 seconds to make sure sending online message works
-                if (!BukkitClient.messageBus.isSocketClosed()) {
-                    Thread.sleep(2000); //TODO
-                    BukkitClient.sendGameMessage("[PolyChat] Connection re-established!");
-                    sendServerOnline();
-                    Thread.sleep(1000);
-                    sendOnlinePlayers();
-                    isConnected = true;
-                }
-
             }
+
         } catch (UnknownHostException e) {
             System.out.println("Unknown host exception on reattach");
         } catch (IOException e) {
