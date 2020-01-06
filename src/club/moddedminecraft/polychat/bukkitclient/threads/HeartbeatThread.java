@@ -10,7 +10,12 @@ public abstract class HeartbeatThread {
 
     public HeartbeatThread(int interval) {
         this.interval = interval;
-        this.thread = new Thread(this::runThread);
+        this.thread = new Thread(new Runnable(){
+            @Override
+            public void run(){
+                runThread();
+            }
+        });
     }
 
     protected abstract void run() throws InterruptedException, IOException;

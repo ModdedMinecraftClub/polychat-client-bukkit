@@ -34,7 +34,12 @@ public final class BukkitClient extends JavaPlugin implements Listener{
 
     public static void handleClientConnection() {
         try {
-            messageBus = new MessageBus(new Socket(properties.getProperty("address"), Integer.parseInt(properties.getProperty("port"))), EventListener::handleMessage);
+            messageBus = new MessageBus(new Socket(properties.getProperty("address"), Integer.parseInt(properties.getProperty("port"))), new ReceiverCallback(){
+                @Override
+                public void receive(AbstractMessage abstractMessage){
+                    EventListener.handleMessage(abstractMessage);
+                }
+            });
             messageBus.start();
         } catch (IOException e) {
             System.err.println("Failed to establish polychat connection!");
@@ -72,7 +77,12 @@ public final class BukkitClient extends JavaPlugin implements Listener{
 
     	new EventListener(this);
 
-    	Runtime.getRuntime().addShutdownHook(new Thread(this::shutdownHook));
+    	Runtime.getRuntime().addShutdownHook(new Thread(new Runnable(){
+            @Override
+            public void run(){
+                shutdownHook();
+            }
+        }));
 
         ServerInfoMessage infoMessage = new ServerInfoMessage(
                 BukkitClient.properties.getProperty("server_id", "DEFAULT_ID"),

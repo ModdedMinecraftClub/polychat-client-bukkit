@@ -2,10 +2,7 @@ package club.moddedminecraft.polychat.bukkitclient.threads;
 
 import club.moddedminecraft.polychat.bukkitclient.EventListener;
 import club.moddedminecraft.polychat.bukkitclient.BukkitClient;
-import club.moddedminecraft.polychat.networking.io.MessageBus;
-import club.moddedminecraft.polychat.networking.io.PlayerListMessage;
-import club.moddedminecraft.polychat.networking.io.ServerInfoMessage;
-import club.moddedminecraft.polychat.networking.io.ServerStatusMessage;
+import club.moddedminecraft.polychat.networking.io.*;
 
 
 import java.io.IOException;
@@ -42,7 +39,12 @@ public class ReattachThread extends HeartbeatThread {
                     if (BukkitClient.messageBus != null) BukkitClient.messageBus.stop();
 
                     //Attempts to start the connection //TODO
-                    BukkitClient.messageBus = new MessageBus(new Socket(BukkitClient.properties.getProperty("address"), Integer.parseInt(BukkitClient.properties.getProperty("port"))), EventListener::handleMessage);
+                    BukkitClient.messageBus = new MessageBus(new Socket(BukkitClient.properties.getProperty("address"), Integer.parseInt(BukkitClient.properties.getProperty("port"))), new ReceiverCallback(){
+                        @Override
+                        public void receive(AbstractMessage abstractMessage){
+                            EventListener.handleMessage(abstractMessage);
+                        }
+                    });
                     BukkitClient.messageBus.start();
 
                     //If the socket was reopened, wait 3 seconds to make sure sending online message works
