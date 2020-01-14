@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/PolyChatBukkitClient.iml" filepath="$PROJECT_DIR$/PolyChatBukkitClient.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/polychat-client-bukkit.iml" filepath="$PROJECT_DIR$/.idea/polychat-client-bukkit.iml" />
     </modules>
   </component>
 </project>
