@@ -6,7 +6,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import club.moddedminecraft.polychat.networking.io.*;
 import org.bukkit.Bukkit;
@@ -24,6 +28,7 @@ public final class BukkitClient extends JavaPlugin implements Listener{
 	public static boolean shutdownClean = false;
     public static MessageBus messageBus = null;
     public static Properties properties;
+    public static File propertiesFolder;
     public static ReattachThread reattachThread;
     public static ActivePlayerThread playerThread;
     public static String idJson = null;
@@ -57,9 +62,78 @@ public final class BukkitClient extends JavaPlugin implements Listener{
         Bukkit.broadcastMessage(message);
     }
 
+    public static int calculateParameters(String command) {
+        Pattern pattern = Pattern.compile("(\\$\\d+)");
+        Matcher matcher = pattern.matcher(command);
+        return matcher.groupCount();
+    }
+
     public static void runCommand(String command) {  //Command Firer
+
+        //Seems a little heavyweight to be doing this for every command but (1) it means we can update config with
+        //server running and (2) we dont use many commands...
+
+        Properties override_properties = new Properties();
+        File override_config = new File(propertiesFolder, "polychat_override.properties");
+
+        //Loads overrides if it exists or creates a sample config if not
+        if (override_config.exists() && override_config.isFile()) {
+            try (FileInputStream istream = new FileInputStream(override_config)) {
+                override_properties.load(istream);
+                System.out.println("override properties has " + override_properties.size() + " entries)");
+            } catch (IOException e) {
+                System.err.println("Error loading override configuration file!");
+                e.printStackTrace();
+            }
+        } else {
+            override_properties.setProperty("override_command_sample", "say hello to $2");
+            try (FileOutputStream ostream = new FileOutputStream(override_config)) {
+                override_properties.store(ostream, null);
+            } catch (IOException e) {
+                System.err.println("Error saving new configuration file!");
+                e.printStackTrace();
+            }
+        }
+
+        System.out.println("Polychat: Received Command <" + command + ">");
+
+        String[] args = command.split("\\s+");
+        String override_lookup = "override_command_" + args[0];
+        String override = override_properties.getProperty( override_lookup, "");
+
+        if (!override.isEmpty()) {
+            command = override;
+
+            // get the last instance of every unique $(number)
+            // ie. /ranks set $1 $2 $1 $3 returns $2 $1 $3
+            Pattern pattern = Pattern.compile("(\\$\\d+)(?!.*\\1)");
+            Matcher matcher = pattern.matcher(override);
+
+            while (matcher.find()) {
+                int argCount = calculateParameters(override);
+                if (args.length < 1) {
+                    System.err.println("Error running command: Server prefix required");
+                    return;
+                }
+
+                if (args.length < (argCount - 1)) {
+                    System.err.println("Expected at least " + argCount + " parameters, received " + (args.length - 1));
+                    return;
+                }
+
+                for (int i = 0; i <= matcher.groupCount(); i++) {
+                    String toBeReplaced = matcher.group(i);
+                    String replaceWith;
+                    int argNum = Integer.parseInt(toBeReplaced.substring(1));
+                    replaceWith = args[argNum - 1];
+                    command = command.replace(toBeReplaced, replaceWith);
+                }
+            }
+            System.out.println("Polychat: Command overridden to <" + command + ">");
+        }
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
     }
+
     public static void addCommand(String command) {  //Holding place for commands
         commands.add(command);
     }
@@ -189,6 +263,7 @@ public final class BukkitClient extends JavaPlugin implements Listener{
     }
 
     public void handleConfiguration(File modConfigDir) {
+        BukkitClient.propertiesFolder = modConfigDir;
         BukkitClient.properties = new Properties();
         File config = new File(modConfigDir, "polychat.properties");
 
