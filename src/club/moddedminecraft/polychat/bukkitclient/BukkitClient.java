@@ -80,7 +80,6 @@ public final class BukkitClient extends JavaPlugin implements Listener{
         if (override_config.exists() && override_config.isFile()) {
             try (FileInputStream istream = new FileInputStream(override_config)) {
                 override_properties.load(istream);
-                System.out.println("override properties has " + override_properties.size() + " entries)");
             } catch (IOException e) {
                 System.err.println("Error loading override configuration file!");
                 e.printStackTrace();
