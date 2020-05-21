@@ -23,9 +23,9 @@ import club.moddedminecraft.polychat.bukkitclient.threads.ActivePlayerThread;
 import club.moddedminecraft.polychat.bukkitclient.threads.ReattachThread;
 import org.bukkit.scheduler.BukkitScheduler;
 
-public final class BukkitClient extends JavaPlugin implements Listener{
-	
-	public static boolean shutdownClean = false;
+public final class BukkitClient extends JavaPlugin implements Listener {
+
+    public static boolean shutdownClean = false;
     public static MessageBus messageBus = null;
     public static Properties properties;
     public static File propertiesFolder;
@@ -34,14 +34,14 @@ public final class BukkitClient extends JavaPlugin implements Listener{
     public static String idJson = null;
     public static String idJsonNoColor = null;
     public static boolean reattachKill = false;
-	public static String serverIdText = null;
-	public static ArrayList<String> commands = new ArrayList<>();
+    public static String serverIdText = null;
+    public static ArrayList<String> commands = new ArrayList<>();
 
     public static void handleClientConnection() {
         try {
-            messageBus = new MessageBus(new Socket(properties.getProperty("address"), Integer.parseInt(properties.getProperty("port"))), new ReceiverCallback(){
+            messageBus = new MessageBus(new Socket(properties.getProperty("address"), Integer.parseInt(properties.getProperty("port"))), new ReceiverCallback() {
                 @Override
-                public void receive(AbstractMessage abstractMessage){
+                public void receive(AbstractMessage abstractMessage) {
                     EventListener.handleMessage(abstractMessage);
                 }
             });
@@ -55,7 +55,8 @@ public final class BukkitClient extends JavaPlugin implements Listener{
     public static void sendMessage(AbstractMessage message) {
         try {
             messageBus.sendMessage(message);
-        } catch (NullPointerException ignored) {}
+        } catch (NullPointerException ignored) {
+        }
     }
 
     public static void sendGameMessage(String message) {
@@ -75,7 +76,7 @@ public final class BukkitClient extends JavaPlugin implements Listener{
         String[] args = command.split("\\s+");
         String override_lookup = "override_command_" + args[0];
         //String override = override_properties.getProperty( override_lookup, "");
-        String override = BukkitClient.properties.getProperty( override_lookup, "");
+        String override = BukkitClient.properties.getProperty(override_lookup, "");
 
         if (!override.isEmpty()) {
             command = override;
@@ -125,11 +126,11 @@ public final class BukkitClient extends JavaPlugin implements Listener{
 
         handleClientConnection();
 
-    	new EventListener(this);
+        new EventListener(this);
 
-    	Runtime.getRuntime().addShutdownHook(new Thread(new Runnable(){
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
-            public void run(){
+            public void run() {
                 shutdownHook();
             }
         }));
@@ -152,7 +153,7 @@ public final class BukkitClient extends JavaPlugin implements Listener{
             public void run() {
                 if (commands.size() != 0) {
                     int i = 0;
-                    while(i<commands.size()){
+                    while (i < commands.size()) {
                         runCommand(commands.get(i));
                         i++;
                     }
@@ -160,16 +161,16 @@ public final class BukkitClient extends JavaPlugin implements Listener{
                 }
             }
         }, 0L, 20L);
-        if(!reattachKill) { //only start it on a fresh start, not on a reload
+        if (!reattachKill) { //only start it on a fresh start, not on a reload
             reattachThread.start();//actually start the thread at the end so the main thread is running already
-        }else{
+        } else {
 
         }
     }
-    
+
     @Override
     public void onDisable() {
-    	shutdownClean = true;
+        shutdownClean = true;
         reattachKill = true;
 
         ServerStatusMessage offlineMsg = new ServerStatusMessage(properties.getProperty("server_id"), idJson, (short) 2);
@@ -187,7 +188,7 @@ public final class BukkitClient extends JavaPlugin implements Listener{
 
     }
 
-    
+
     public void shutdownHook() {
         //Sends either crashed or offline depending on if shutdown happened cleanly
         if (!shutdownClean) {
@@ -202,39 +203,56 @@ public final class BukkitClient extends JavaPlugin implements Listener{
         messageBus.stop();
     }
 
-	public static ArrayList<String> getOnlinePlayersNames() { //Might have to fix return type
-		ArrayList<String> playerList = new ArrayList<> ();
-		
-		for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-		    playerList.add(player.getName());
-		}
-		return playerList;
-	}
-	
-	public static int getMaxPlayers() { 
-		return Bukkit.getMaxPlayers();
-	}
+    public static ArrayList<String> getOnlinePlayersNames() { //Might have to fix return type
+        ArrayList<String> playerList = new ArrayList<>();
+
+        for (Player player : Bukkit.getServer().getOnlinePlayers()) {
+            playerList.add(player.getName());
+        }
+        return playerList;
+    }
+
+    public static int getMaxPlayers() {
+        return Bukkit.getMaxPlayers();
+    }
 
 
-	public static ChatColor colorSwitch(int colorInt){
-        switch(colorInt){
-            case 0: return ChatColor.getByChar('0');
-            case 1: return ChatColor.getByChar('1');
-            case 2: return ChatColor.getByChar('2');
-            case 3: return ChatColor.getByChar('3');
-            case 4: return ChatColor.getByChar('4');
-            case 5: return ChatColor.getByChar('5');
-            case 6: return ChatColor.getByChar('6');
-            case 7: return ChatColor.getByChar('7');
-            case 8: return ChatColor.getByChar('8');
-            case 9: return ChatColor.getByChar('9');
-            case 10: return ChatColor.getByChar('a');
-            case 11: return ChatColor.getByChar('b');
-            case 12: return ChatColor.getByChar('c');
-            case 13: return ChatColor.getByChar('d');
-            case 14: return ChatColor.getByChar('e');
-            case 15: return ChatColor.getByChar('f');
-            default: return ChatColor.getByChar("0");
+    public static ChatColor colorSwitch(int colorInt) {
+        switch (colorInt) {
+            case 0:
+                return ChatColor.getByChar('0');
+            case 1:
+                return ChatColor.getByChar('1');
+            case 2:
+                return ChatColor.getByChar('2');
+            case 3:
+                return ChatColor.getByChar('3');
+            case 4:
+                return ChatColor.getByChar('4');
+            case 5:
+                return ChatColor.getByChar('5');
+            case 6:
+                return ChatColor.getByChar('6');
+            case 7:
+                return ChatColor.getByChar('7');
+            case 8:
+                return ChatColor.getByChar('8');
+            case 9:
+                return ChatColor.getByChar('9');
+            case 10:
+                return ChatColor.getByChar('a');
+            case 11:
+                return ChatColor.getByChar('b');
+            case 12:
+                return ChatColor.getByChar('c');
+            case 13:
+                return ChatColor.getByChar('d');
+            case 14:
+                return ChatColor.getByChar('e');
+            case 15:
+                return ChatColor.getByChar('f');
+            default:
+                return ChatColor.getByChar("0");
         }
     }
 
@@ -266,6 +284,7 @@ public final class BukkitClient extends JavaPlugin implements Listener{
             }
         }
     }
+
     public void handlePrefix() {
         String idText = properties.getProperty("server_id");
         ChatColor color;
@@ -281,7 +300,6 @@ public final class BukkitClient extends JavaPlugin implements Listener{
             idJson = idText;
         }
     }
-
 
 
 }
