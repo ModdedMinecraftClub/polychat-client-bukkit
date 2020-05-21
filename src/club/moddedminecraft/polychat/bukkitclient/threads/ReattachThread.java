@@ -1,15 +1,13 @@
 package club.moddedminecraft.polychat.bukkitclient.threads;
 
-import club.moddedminecraft.polychat.bukkitclient.EventListener;
 import club.moddedminecraft.polychat.bukkitclient.BukkitClient;
+import club.moddedminecraft.polychat.bukkitclient.EventListener;
 import club.moddedminecraft.polychat.networking.io.*;
-
 
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Collections;
 
 import static club.moddedminecraft.polychat.bukkitclient.BukkitClient.reattachKill;
 
@@ -24,7 +22,7 @@ public class ReattachThread extends HeartbeatThread {
     @Override
     protected void run() throws InterruptedException, IOException {
         try {
-            if(!reattachKill) {
+            if (!reattachKill) {
                 if (BukkitClient.messageBus == null || (BukkitClient.messageBus.isSocketClosed())) {
 
                     System.out.println("Firing reattach");
@@ -39,9 +37,9 @@ public class ReattachThread extends HeartbeatThread {
                     if (BukkitClient.messageBus != null) BukkitClient.messageBus.stop();
 
                     //Attempts to start the connection //TODO
-                    BukkitClient.messageBus = new MessageBus(new Socket(BukkitClient.properties.getProperty("address"), Integer.parseInt(BukkitClient.properties.getProperty("port"))), new ReceiverCallback(){
+                    BukkitClient.messageBus = new MessageBus(new Socket(BukkitClient.properties.getProperty("address"), Integer.parseInt(BukkitClient.properties.getProperty("port"))), new ReceiverCallback() {
                         @Override
-                        public void receive(AbstractMessage abstractMessage){
+                        public void receive(AbstractMessage abstractMessage) {
                             EventListener.handleMessage(abstractMessage);
                         }
                     });
@@ -69,12 +67,12 @@ public class ReattachThread extends HeartbeatThread {
     public void sendServerOnline() { //TODO
         //Reports the server as starting
         ServerInfoMessage infoMessage = new ServerInfoMessage(BukkitClient.properties.getProperty("server_id", "DEFAULT_ID"),
-        		BukkitClient.properties.getProperty("server_name", "DEFAULT_NAME"),
-        		BukkitClient.properties.getProperty("server_address", "DEFAULT_ADDRESS"), BukkitClient.getMaxPlayers());
+                BukkitClient.properties.getProperty("server_name", "DEFAULT_NAME"),
+                BukkitClient.properties.getProperty("server_address", "DEFAULT_ADDRESS"), BukkitClient.getMaxPlayers());
         BukkitClient.sendMessage(infoMessage);
         //Reports the server as online and ready to receive players
         String id = BukkitClient.idJson;
-        ServerStatusMessage statusMessage = new ServerStatusMessage(BukkitClient.properties.getProperty("server_id"),id, (short) 1);
+        ServerStatusMessage statusMessage = new ServerStatusMessage(BukkitClient.properties.getProperty("server_id"), id, (short) 1);
         BukkitClient.sendMessage(statusMessage);
     }
 

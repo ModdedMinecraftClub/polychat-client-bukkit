@@ -5,7 +5,6 @@ import club.moddedminecraft.polychat.bukkitclient.BukkitClient;
 import club.moddedminecraft.polychat.networking.io.PlayerListMessage;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 public class ActivePlayerThread extends HeartbeatThread {
 
