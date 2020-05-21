@@ -20,22 +20,25 @@ public class BukkitCommandSender implements CommandSender {
     private final Server server;
     private final ArrayList<String> output = new ArrayList<>();
     private final String color;
+    private boolean parseSuccess;
 
     public BukkitCommandSender(CommandMessage commandMessage, Server server, String color) {
         this.commandMessage = commandMessage;
         this.server = server;
         this.color = color;
+        parseSuccess = false;
     }
 
     public void sendOutput() {
+        if (!parseSuccess) {
+            return;
+        }
+
         StringBuilder commandOutput = new StringBuilder();
         for (String output : this.output) {
             commandOutput.append(output).append("\n");
         }
-        String serverID = commandMessage.getServerID();
-        String channel = commandMessage.getChannel();
-        CommandOutputMessage message = new CommandOutputMessage(serverID, "/" + getCommand(), commandOutput.toString(), channel, color);
-        BukkitClient.sendMessage(message);
+        sendOutputMessage("/" + getCommand(), commandOutput.toString());
     }
 
     @Override
@@ -50,6 +53,23 @@ public class BukkitCommandSender implements CommandSender {
         }
     }
 
+    private void sendOutputMessage(String title, String description) {
+        String serverID = commandMessage.getServerID();
+        String channel = commandMessage.getChannel();
+        CommandOutputMessage message = new CommandOutputMessage(serverID, title, description, channel, color);
+        BukkitClient.sendMessage(message);
+    }
+
+    public int calculateParameters(String command) {
+        Pattern pattern = Pattern.compile("(\\$\\d+)");
+        Matcher matcher = pattern.matcher(command);
+        int count = 0;
+        while (matcher.find()) {
+            count++;
+        }
+        return count;
+    }
+
     public String getCommand() {
         String name = commandMessage.getName();
         String command = commandMessage.getCommand();
@@ -60,6 +80,12 @@ public class BukkitCommandSender implements CommandSender {
         String override = BukkitClient.properties.getProperty(override_lookup, "");
         if (!override.isEmpty()) {
             command = override;
+        }
+
+        int commandArgs = calculateParameters(command);
+        if (args.size() < commandArgs) {
+            sendOutputMessage("Error parsing command", "Expected at least " + commandArgs + " parameters, received " + args.size());
+            return null;
         }
 
         // get the last instance of every unique $(number)
@@ -78,6 +104,8 @@ public class BukkitCommandSender implements CommandSender {
         }
 
         command = command.replace("$args", String.join(" ", args));
+
+        parseSuccess = true;
         return command;
     }
 

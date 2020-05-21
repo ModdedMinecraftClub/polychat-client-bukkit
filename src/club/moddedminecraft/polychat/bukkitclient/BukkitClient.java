@@ -148,7 +148,10 @@ public final class BukkitClient extends JavaPlugin implements Listener {
             @Override
             public void run() {
                 for (BukkitCommandSender sender : commands) {
-                    getServer().dispatchCommand(sender, sender.getCommand());
+                    String command = sender.getCommand();
+                    if (command != null) {
+                        getServer().dispatchCommand(sender, command);
+                    }
                 }
                 commands.clear();
             }
