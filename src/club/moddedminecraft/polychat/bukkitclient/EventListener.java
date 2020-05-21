@@ -99,6 +99,7 @@ public class EventListener implements Listener {
     @EventHandler
     public void onChat(AsyncPlayerChatEvent event) {
         String id = BukkitClient.properties.getProperty("server_id");
+        event.setFormat(BukkitClient.idJson + " §7%s: §r%s");
 
         String name = event.getPlayer().getDisplayName();
         String cleanName = "";
@@ -120,6 +121,7 @@ public class EventListener implements Listener {
         }
 
         String json = "{\"text\": \"" + cleanedJson + "\"}";
+        System.out.println(BukkitClient.idJson);
         ChatMessage chatMessage = new ChatMessage(BukkitClient.idJsonNoColor + " " + cleanName, event.getMessage(), json);
         BukkitClient.sendMessage(chatMessage);
     }
