@@ -1,30 +1,47 @@
 package club.moddedminecraft.polychat.bukkitclient;
 
+import club.moddedminecraft.polychat.bukkitclient.threads.ActivePlayerThread;
+import club.moddedminecraft.polychat.bukkitclient.threads.ReattachThread;
+import club.moddedminecraft.polychat.networking.io.*;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Server;
+import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitScheduler;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import club.moddedminecraft.polychat.networking.io.*;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
-import org.bukkit.event.*;
-import org.bukkit.plugin.java.JavaPlugin;
-
-import club.moddedminecraft.polychat.bukkitclient.threads.ActivePlayerThread;
-import club.moddedminecraft.polychat.bukkitclient.threads.ReattachThread;
-import org.bukkit.scheduler.BukkitScheduler;
-
 public final class BukkitClient extends JavaPlugin implements Listener {
 
+    private static final HashMap<Integer, ChatColor> colorHashMap = new HashMap<Integer, ChatColor>() {{
+        put(0, ChatColor.getByChar('0'));
+        put(1, ChatColor.getByChar('1'));
+        put(2, ChatColor.getByChar('2'));
+        put(3, ChatColor.getByChar('3'));
+        put(4, ChatColor.getByChar('4'));
+        put(5, ChatColor.getByChar('5'));
+        put(6, ChatColor.getByChar('6'));
+        put(7, ChatColor.getByChar('7'));
+        put(8, ChatColor.getByChar('8'));
+        put(9, ChatColor.getByChar('9'));
+        put(10, ChatColor.getByChar('a'));
+        put(11, ChatColor.getByChar('b'));
+        put(12, ChatColor.getByChar('c'));
+        put(13, ChatColor.getByChar('d'));
+        put(14, ChatColor.getByChar('e'));
+        put(15, ChatColor.getByChar('f'));
+    }};
     public static boolean shutdownClean = false;
     public static MessageBus messageBus = null;
     public static Properties properties;
@@ -34,8 +51,7 @@ public final class BukkitClient extends JavaPlugin implements Listener {
     public static String idJson = null;
     public static String idJsonNoColor = null;
     public static boolean reattachKill = false;
-    public static String serverIdText = null;
-    public static ArrayList<String> commands = new ArrayList<>();
+    public static ArrayList<BukkitCommandSender> commands = new ArrayList<>();
 
     public static void handleClientConnection() {
         try {
@@ -69,50 +85,30 @@ public final class BukkitClient extends JavaPlugin implements Listener {
         return matcher.groupCount();
     }
 
-    public static void runCommand(String command) {  //Command Firer
-
-        //Loads overrides if it exists or creates a sample config if not
-        System.out.println("Polychat: Received Command <" + command + ">");
-        String[] args = command.split("\\s+");
-        String override_lookup = "override_command_" + args[0];
-        //String override = override_properties.getProperty( override_lookup, "");
-        String override = BukkitClient.properties.getProperty(override_lookup, "");
-
-        if (!override.isEmpty()) {
-            command = override;
-
-            // get the last instance of every unique $(number)
-            // ie. /ranks set $1 $2 $1 $3 returns $2 $1 $3
-            Pattern pattern = Pattern.compile("(\\$\\d+)(?!.*\\1)");
-            Matcher matcher = pattern.matcher(override);
-
-            while (matcher.find()) {
-                int argCount = calculateParameters(override);
-                if (args.length < 1) {
-                    System.err.println("Error running command: Server prefix required");
-                    return;
-                }
-
-                if (args.length < (argCount - 1)) {
-                    System.err.println("Expected at least " + argCount + " parameters, received " + (args.length - 1));
-                    return;
-                }
-
-                for (int i = 0; i <= matcher.groupCount(); i++) {
-                    String toBeReplaced = matcher.group(i);
-                    String replaceWith;
-                    int argNum = Integer.parseInt(toBeReplaced.substring(1));
-                    replaceWith = args[argNum - 1];
-                    command = command.replace(toBeReplaced, replaceWith);
-                }
-            }
-            System.out.println("Polychat: Command overridden to <" + command + ">");
-        }
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+    public static ChatColor getColor(int color) {
+        return colorHashMap.getOrDefault(color, ChatColor.getByChar("0"));
     }
 
-    public static void addCommand(String command) {  //Holding place for commands
-        commands.add(command);
+
+    public static void queueCommand(BukkitCommandSender sender) {  //Holding place for commands
+        commands.add(sender);
+    }
+
+    public static ArrayList<String> getOnlinePlayersNames() { //Might have to fix return type
+        ArrayList<String> playerList = new ArrayList<>();
+
+        for (Player player : Bukkit.getServer().getOnlinePlayers()) {
+            playerList.add(player.getName());
+        }
+        return playerList;
+    }
+
+    public static int getMaxPlayers() {
+        return Bukkit.getMaxPlayers();
+    }
+
+    public Server getBukkitServer() {
+        return getServer();
     }
 
     @Override
@@ -151,20 +147,14 @@ public final class BukkitClient extends JavaPlugin implements Listener {
         scheduler.scheduleSyncRepeatingTask(this, new Runnable() { //Repeating task for listening for commands so they are ran on the right thread
             @Override
             public void run() {
-                if (commands.size() != 0) {
-                    int i = 0;
-                    while (i < commands.size()) {
-                        runCommand(commands.get(i));
-                        i++;
-                    }
-                    commands.clear();
+                for (BukkitCommandSender sender : commands) {
+                    getServer().dispatchCommand(sender, sender.getCommand());
                 }
+                commands.clear();
             }
         }, 0L, 20L);
         if (!reattachKill) { //only start it on a fresh start, not on a reload
             reattachThread.start();//actually start the thread at the end so the main thread is running already
-        } else {
-
         }
     }
 
@@ -188,7 +178,6 @@ public final class BukkitClient extends JavaPlugin implements Listener {
 
     }
 
-
     public void shutdownHook() {
         //Sends either crashed or offline depending on if shutdown happened cleanly
         if (!shutdownClean) {
@@ -201,59 +190,6 @@ public final class BukkitClient extends JavaPlugin implements Listener {
         } catch (InterruptedException ignored) {
         }
         messageBus.stop();
-    }
-
-    public static ArrayList<String> getOnlinePlayersNames() { //Might have to fix return type
-        ArrayList<String> playerList = new ArrayList<>();
-
-        for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-            playerList.add(player.getName());
-        }
-        return playerList;
-    }
-
-    public static int getMaxPlayers() {
-        return Bukkit.getMaxPlayers();
-    }
-
-
-    public static ChatColor colorSwitch(int colorInt) {
-        switch (colorInt) {
-            case 0:
-                return ChatColor.getByChar('0');
-            case 1:
-                return ChatColor.getByChar('1');
-            case 2:
-                return ChatColor.getByChar('2');
-            case 3:
-                return ChatColor.getByChar('3');
-            case 4:
-                return ChatColor.getByChar('4');
-            case 5:
-                return ChatColor.getByChar('5');
-            case 6:
-                return ChatColor.getByChar('6');
-            case 7:
-                return ChatColor.getByChar('7');
-            case 8:
-                return ChatColor.getByChar('8');
-            case 9:
-                return ChatColor.getByChar('9');
-            case 10:
-                return ChatColor.getByChar('a');
-            case 11:
-                return ChatColor.getByChar('b');
-            case 12:
-                return ChatColor.getByChar('c');
-            case 13:
-                return ChatColor.getByChar('d');
-            case 14:
-                return ChatColor.getByChar('e');
-            case 15:
-                return ChatColor.getByChar('f');
-            default:
-                return ChatColor.getByChar("0");
-        }
     }
 
     public void handleConfiguration(File modConfigDir) {
@@ -293,13 +229,12 @@ public final class BukkitClient extends JavaPlugin implements Listener {
             if ((code < 0) || (code > 15)) {
                 color = ChatColor.getByChar('f');
             } else {
-                color = colorSwitch(code);
+                color = getColor(code);
             }
             idJsonNoColor = idText;
             idText = color + "" + idText;
             idJson = idText;
         }
     }
-
 
 }

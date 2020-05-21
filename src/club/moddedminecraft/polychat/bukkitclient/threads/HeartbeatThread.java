@@ -5,14 +5,14 @@ import java.io.IOException;
 
 public abstract class HeartbeatThread {
 
-    private int interval;
-    private Thread thread;
+    private final int interval;
+    private final Thread thread;
 
     public HeartbeatThread(int interval) {
         this.interval = interval;
-        this.thread = new Thread(new Runnable(){
+        this.thread = new Thread(new Runnable() {
             @Override
-            public void run(){
+            public void run() {
                 runThread();
             }
         });
