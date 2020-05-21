@@ -70,35 +70,12 @@ public final class BukkitClient extends JavaPlugin implements Listener{
 
     public static void runCommand(String command) {  //Command Firer
 
-        //Seems a little heavyweight to be doing this for every command but (1) it means we can update config with
-        //server running and (2) we dont use many commands...
-
-        Properties override_properties = new Properties();
-        File override_config = new File(propertiesFolder, "polychat_override.properties");
-
         //Loads overrides if it exists or creates a sample config if not
-        if (override_config.exists() && override_config.isFile()) {
-            try (FileInputStream istream = new FileInputStream(override_config)) {
-                override_properties.load(istream);
-            } catch (IOException e) {
-                System.err.println("Error loading override configuration file!");
-                e.printStackTrace();
-            }
-        } else {
-            override_properties.setProperty("override_command_sample", "say hello to $2");
-            try (FileOutputStream ostream = new FileOutputStream(override_config)) {
-                override_properties.store(ostream, null);
-            } catch (IOException e) {
-                System.err.println("Error saving new configuration file!");
-                e.printStackTrace();
-            }
-        }
-
         System.out.println("Polychat: Received Command <" + command + ">");
-
         String[] args = command.split("\\s+");
         String override_lookup = "override_command_" + args[0];
-        String override = override_properties.getProperty( override_lookup, "");
+        //String override = override_properties.getProperty( override_lookup, "");
+        String override = BukkitClient.properties.getProperty( override_lookup, "");
 
         if (!override.isEmpty()) {
             command = override;
