@@ -4,6 +4,9 @@ import club.moddedminecraft.polychat.networking.io.CommandMessage;
 import club.moddedminecraft.polychat.networking.io.CommandOutputMessage;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.conversations.Conversation;
+import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
@@ -14,7 +17,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class BukkitCommandSender implements CommandSender {
+public class BukkitCommandSender implements ConsoleCommandSender {
 
     private final CommandMessage commandMessage;
     private final Server server;
@@ -180,6 +183,36 @@ public class BukkitCommandSender implements CommandSender {
 
     @Override
     public void setOp(boolean b) {
+
+    }
+
+    @Override
+    public boolean isConversing() {
+        return false;
+    }
+
+    @Override
+    public void acceptConversationInput(String s) {
+
+    }
+
+    @Override
+    public boolean beginConversation(Conversation conversation) {
+        return false;
+    }
+
+    @Override
+    public void abandonConversation(Conversation conversation) {
+
+    }
+
+    @Override
+    public void abandonConversation(Conversation conversation, ConversationAbandonedEvent conversationAbandonedEvent) {
+
+    }
+
+    @Override
+    public void sendRawMessage(String s) {
 
     }
 }

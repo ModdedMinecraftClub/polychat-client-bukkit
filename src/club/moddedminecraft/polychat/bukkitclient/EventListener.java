@@ -32,17 +32,17 @@ public class EventListener implements Listener {
             ChatColor colorType = ChatColor.WHITE; //Sets a placeholder white
             int color = broadcastMessage.prefixColor();  //gets the color from message
             if ((color >= 0) && (color <= 15))
-                colorType = BukkitClient.getColor(color);  //makes sure color is valid and sets it to bukkit color type
+                colorType = ChatColor.getByChar(String.format("%01x", color));  //makes sure color is valid and sets it to bukkit color type
             finalMessage = broadcastPrefix + "" + colorType + "" + broadcastMessage.getMessage() + ChatColor.WHITE; //Prefix: color, message then white to finalMessage
 
         } else if (message instanceof ChatMessage) {
             ChatMessage chatMessage = (ChatMessage) message;
-            if (chatMessage.getComponentJson().equals("empty")) {
+            if (chatMessage.getFormattedMessage().equals("empty")) {
                 String prefix = ChatColor.DARK_PURPLE + "" + "[Discord] "; //Sets prefix to discord
                 ChatColor colorType = ChatColor.WHITE; //Sets colorType to Dark Purple for the rest of a discord message
                 finalMessage = prefix + "" + colorType + "" + chatMessage.getUsername() + " " + chatMessage.getMessage(); //Appends the color, username and message to the finalMessage
             } else {
-                finalMessage = chatMessage.getUsername() + chatMessage.getMessage();//TODO: Fix the JSON decoding
+                finalMessage = chatMessage.getFormattedMessage();
             }
         } else if (message instanceof ServerStatusMessage) {
             ServerStatusMessage serverStatus = ((ServerStatusMessage) message);
@@ -60,7 +60,7 @@ public class EventListener implements Listener {
                     System.err.println("Unrecognized server state " + serverStatus.getState() + " received from " + serverStatus.getServerID());
             }
             if (finalMessage != null) {
-                finalMessage = serverStatus.getServerID() + "" + ChatColor.WHITE + "" + finalMessage; //Server Prefix: *White* Server Status
+                finalMessage = serverStatus.getFormattedPrefix() + "§r" + finalMessage;
             }
         } else if (message instanceof PlayerStatusMessage) {
             PlayerStatusMessage playerStatus = ((PlayerStatusMessage) message);
@@ -70,23 +70,14 @@ public class EventListener implements Listener {
                 } else {
                     finalMessage = " " + playerStatus.getUserName() + " has left the game";
                 }
-                finalMessage = playerStatus.getServerID() + "" + ChatColor.WHITE + "" + finalMessage; //Server Prefix: *White* Player name has left/joined
 
+                finalMessage = playerStatus.getFormattedPrefix() + "§r" + finalMessage;
             }
         } else if (message instanceof CommandMessage) {
             CommandMessage commandMessage = (CommandMessage) message;
             final BukkitCommandSender sender = new BukkitCommandSender(commandMessage, server, BukkitClient.properties.getProperty("id_color", "15"));
 
             BukkitClient.queueCommand(sender);
-
-            // send command output to discord in .5 seconds
-            new Timer().schedule(new TimerTask() { //TODO: Command output returning
-                @Override
-                public void run() {
-                    sender.sendOutput();
-                }
-            }, 500);
-
         }
         if (finalMessage != null) {
             Bukkit.getServer().getLogger().info(finalMessage);
@@ -99,7 +90,7 @@ public class EventListener implements Listener {
     @EventHandler
     public void onChat(AsyncPlayerChatEvent event) {
         String id = BukkitClient.properties.getProperty("server_id");
-        event.setFormat(BukkitClient.idJson + " §7%s: §r%s");
+        event.setFormat(BukkitClient.idFormatted + " §7%s: §r%s");
 
         String name = event.getPlayer().getDisplayName();
         String cleanName = "";
@@ -111,34 +102,20 @@ public class EventListener implements Listener {
             }
         }
 
-        String cleanedJsonBase = BukkitClient.idJson + " " + cleanName + event.getMessage();
-        String cleanedJson = "";
-        for (int i = 0; i < cleanedJsonBase.length(); ++i) {
-            char c = cleanedJsonBase.charAt(i);
-            if (Character.isAlphabetic(c) || Character.isDigit(c) || c == '[' || c == ']' || c == ':' || c == ' ') {
-                cleanedJson += c;
-            }
-        }
-
-        String json = "{\"text\": \"" + cleanedJson + "\"}";
-        System.out.println(BukkitClient.idJson);
-        ChatMessage chatMessage = new ChatMessage(BukkitClient.idJsonNoColor + " " + cleanName, event.getMessage(), json);
+        String formattedName = BukkitClient.id + " " + cleanName + ": ";
+        ChatMessage chatMessage = new ChatMessage(formattedName, event.getMessage(), String.format(event.getFormat(), cleanName, event.getMessage()));
         BukkitClient.sendMessage(chatMessage);
     }
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
-        String id = BukkitClient.properties.getProperty("server_id");
-        PlayerStatusMessage loginMsg = new PlayerStatusMessage(event.getPlayer().getName(), id, BukkitClient.idJson, true, false);
+        PlayerStatusMessage loginMsg = new PlayerStatusMessage(event.getPlayer().getName(), BukkitClient.id, BukkitClient.idFormatted, true, false);
         BukkitClient.sendMessage(loginMsg);
-
-
     }
 
     @EventHandler
     public void onLeave(PlayerQuitEvent event) {
-        String id = BukkitClient.properties.getProperty("server_id");
-        PlayerStatusMessage logoutMsg = new PlayerStatusMessage(event.getPlayer().getName(), id, BukkitClient.idJson, false, false);
+        PlayerStatusMessage logoutMsg = new PlayerStatusMessage(event.getPlayer().getName(), BukkitClient.id, BukkitClient.idFormatted, false, false);
         BukkitClient.sendMessage(logoutMsg);
     }
 

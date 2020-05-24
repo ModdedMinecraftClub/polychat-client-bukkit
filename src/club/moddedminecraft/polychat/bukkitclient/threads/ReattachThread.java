@@ -9,6 +9,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
+import static club.moddedminecraft.polychat.bukkitclient.BukkitClient.idFormatted;
 import static club.moddedminecraft.polychat.bukkitclient.BukkitClient.reattachKill;
 
 public class ReattachThread extends HeartbeatThread {
@@ -71,8 +72,8 @@ public class ReattachThread extends HeartbeatThread {
                 BukkitClient.properties.getProperty("server_address", "DEFAULT_ADDRESS"), BukkitClient.getMaxPlayers());
         BukkitClient.sendMessage(infoMessage);
         //Reports the server as online and ready to receive players
-        String id = BukkitClient.idJson;
-        ServerStatusMessage statusMessage = new ServerStatusMessage(BukkitClient.properties.getProperty("server_id"), id, (short) 1);
+        String id = BukkitClient.idFormatted;
+        ServerStatusMessage statusMessage = new ServerStatusMessage(BukkitClient.id, idFormatted, (short) 1);
         BukkitClient.sendMessage(statusMessage);
     }
 

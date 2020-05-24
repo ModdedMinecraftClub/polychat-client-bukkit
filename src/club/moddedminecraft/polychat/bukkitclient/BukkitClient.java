@@ -24,32 +24,14 @@ import java.util.regex.Pattern;
 
 public final class BukkitClient extends JavaPlugin implements Listener {
 
-    private static final HashMap<Integer, ChatColor> colorHashMap = new HashMap<Integer, ChatColor>() {{
-        put(0, ChatColor.getByChar('0'));
-        put(1, ChatColor.getByChar('1'));
-        put(2, ChatColor.getByChar('2'));
-        put(3, ChatColor.getByChar('3'));
-        put(4, ChatColor.getByChar('4'));
-        put(5, ChatColor.getByChar('5'));
-        put(6, ChatColor.getByChar('6'));
-        put(7, ChatColor.getByChar('7'));
-        put(8, ChatColor.getByChar('8'));
-        put(9, ChatColor.getByChar('9'));
-        put(10, ChatColor.getByChar('a'));
-        put(11, ChatColor.getByChar('b'));
-        put(12, ChatColor.getByChar('c'));
-        put(13, ChatColor.getByChar('d'));
-        put(14, ChatColor.getByChar('e'));
-        put(15, ChatColor.getByChar('f'));
-    }};
     public static boolean shutdownClean = false;
     public static MessageBus messageBus = null;
     public static Properties properties;
     public static File propertiesFolder;
     public static ReattachThread reattachThread;
     public static ActivePlayerThread playerThread;
-    public static String idJson = null;
-    public static String idJsonNoColor = null;
+    public static String id = null;
+    public static String idFormatted = null;
     public static boolean reattachKill = false;
     public static ArrayList<BukkitCommandSender> commands = new ArrayList<>();
 
@@ -85,11 +67,6 @@ public final class BukkitClient extends JavaPlugin implements Listener {
         return matcher.groupCount();
     }
 
-    public static ChatColor getColor(int color) {
-        return colorHashMap.getOrDefault(color, ChatColor.getByChar("0"));
-    }
-
-
     public static void queueCommand(BukkitCommandSender sender) {  //Holding place for commands
         commands.add(sender);
     }
@@ -105,10 +82,6 @@ public final class BukkitClient extends JavaPlugin implements Listener {
 
     public static int getMaxPlayers() {
         return Bukkit.getMaxPlayers();
-    }
-
-    public Server getBukkitServer() {
-        return getServer();
     }
 
     @Override
@@ -140,7 +113,7 @@ public final class BukkitClient extends JavaPlugin implements Listener {
 
         BukkitClient.sendMessage(infoMessage);
 
-        ServerStatusMessage onlineMsg = new ServerStatusMessage(properties.getProperty("server_id"), idJson, (short) 1);
+        ServerStatusMessage onlineMsg = new ServerStatusMessage(id, idFormatted, (short) 1);
         sendMessage(onlineMsg);
 
         BukkitScheduler scheduler = getServer().getScheduler();
@@ -150,7 +123,12 @@ public final class BukkitClient extends JavaPlugin implements Listener {
                 for (BukkitCommandSender sender : commands) {
                     String command = sender.getCommand();
                     if (command != null) {
-                        getServer().dispatchCommand(sender, command);
+                        try {
+                            getServer().dispatchCommand(sender, command);
+                            sender.sendOutput();
+                        } catch (Exception e) {
+                            System.err.println(e);
+                        }
                     }
                 }
                 commands.clear();
@@ -166,7 +144,7 @@ public final class BukkitClient extends JavaPlugin implements Listener {
         shutdownClean = true;
         reattachKill = true;
 
-        ServerStatusMessage offlineMsg = new ServerStatusMessage(properties.getProperty("server_id"), idJson, (short) 2);
+        ServerStatusMessage offlineMsg = new ServerStatusMessage(id, idFormatted, (short) 2);
         sendMessage(offlineMsg);
 
         try {
@@ -184,7 +162,7 @@ public final class BukkitClient extends JavaPlugin implements Listener {
     public void shutdownHook() {
         //Sends either crashed or offline depending on if shutdown happened cleanly
         if (!shutdownClean) {
-            ServerStatusMessage crashMsg = new ServerStatusMessage(properties.getProperty("server_id"), idJson, (short) 3);
+            ServerStatusMessage crashMsg = new ServerStatusMessage(id, idFormatted, (short) 3);
             sendMessage(crashMsg);
         }
         try {
@@ -225,18 +203,14 @@ public final class BukkitClient extends JavaPlugin implements Listener {
     }
 
     public void handlePrefix() {
-        String idText = properties.getProperty("server_id");
-        ChatColor color;
-        if (!(idText.equals("empty"))) {
+        String serverId = properties.getProperty("server_id");
+        if (!(serverId.equals("empty"))) {
             int code = Integer.parseInt(properties.getProperty("id_color"));
             if ((code < 0) || (code > 15)) {
-                color = ChatColor.getByChar('f');
-            } else {
-                color = getColor(code);
+                code = 15;
             }
-            idJsonNoColor = idText;
-            idText = color + "" + idText;
-            idJson = idText;
+            id = "[" + serverId + "]";
+            idFormatted = String.format("§%01x[%s]", code, serverId);
         }
     }
 
