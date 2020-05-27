@@ -9,8 +9,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
-import static club.moddedminecraft.polychat.bukkitclient.BukkitClient.idFormatted;
-import static club.moddedminecraft.polychat.bukkitclient.BukkitClient.reattachKill;
+import static club.moddedminecraft.polychat.bukkitclient.BukkitClient.*;
 
 public class ReattachThread extends HeartbeatThread {
 
@@ -30,14 +29,14 @@ public class ReattachThread extends HeartbeatThread {
 
                     //Tells players ingame that the connection failed
                     if (isConnected) {
-                        isConnected = false; //TODO
+                        isConnected = false;
                         BukkitClient.sendGameMessage("[PolyChat] Lost connection to main server, attempting reconnect...");
                     }
 
                     //Stops threads if they are still running
                     if (BukkitClient.messageBus != null) BukkitClient.messageBus.stop();
 
-                    //Attempts to start the connection //TODO
+                    //Attempts to start the connection
                     BukkitClient.messageBus = new MessageBus(new Socket(BukkitClient.properties.getProperty("address"), Integer.parseInt(BukkitClient.properties.getProperty("port"))), new ReceiverCallback() {
                         @Override
                         public void receive(AbstractMessage abstractMessage) {
@@ -48,7 +47,7 @@ public class ReattachThread extends HeartbeatThread {
 
                     //If the socket was reopened, wait 3 seconds to make sure sending online message works
                     if (!BukkitClient.messageBus.isSocketClosed()) {
-                        Thread.sleep(2000); //TODO
+                        Thread.sleep(2000);
                         BukkitClient.sendGameMessage("[PolyChat] Connection re-established!");
                         sendServerOnline();
                         Thread.sleep(1000);
@@ -65,9 +64,10 @@ public class ReattachThread extends HeartbeatThread {
         }
     }
 
-    public void sendServerOnline() { //TODO
+    public void sendServerOnline() {
         //Reports the server as starting
-        ServerInfoMessage infoMessage = new ServerInfoMessage(BukkitClient.properties.getProperty("server_id", "DEFAULT_ID"),
+        ServerInfoMessage infoMessage = new ServerInfoMessage(
+                id,
                 BukkitClient.properties.getProperty("server_name", "DEFAULT_NAME"),
                 BukkitClient.properties.getProperty("server_address", "DEFAULT_ADDRESS"), BukkitClient.getMaxPlayers());
         BukkitClient.sendMessage(infoMessage);
@@ -79,10 +79,10 @@ public class ReattachThread extends HeartbeatThread {
 
 
     //Sends a list of all online players silently for auto reconnect
-    public void sendOnlinePlayers() { //TODO: Check this
+    public void sendOnlinePlayers() {
         ArrayList<String> playerList;
         playerList = BukkitClient.getOnlinePlayersNames();
-        PlayerListMessage message = new PlayerListMessage(BukkitClient.properties.getProperty("server_id"), playerList);
+        PlayerListMessage message = new PlayerListMessage(id, playerList);
         BukkitClient.sendMessage(message);
     }
 }

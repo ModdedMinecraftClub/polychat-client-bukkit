@@ -93,17 +93,10 @@ public class EventListener implements Listener {
         event.setFormat(BukkitClient.idFormatted + " §7%s: §r%s");
 
         String name = event.getPlayer().getDisplayName();
-        String cleanName = "";
-        for (int i = 0; i < name.length(); ++i) {
-            if (name.charAt(i) == '§') {
-                ++i;
-            } else {
-                cleanName += name.charAt(i);
-            }
-        }
+        String cleanName = name.replaceAll("§.", "");
 
         String formattedName = BukkitClient.id + " " + cleanName + ": ";
-        ChatMessage chatMessage = new ChatMessage(formattedName, event.getMessage(), String.format(event.getFormat(), cleanName, event.getMessage()));
+        ChatMessage chatMessage = new ChatMessage(formattedName, event.getMessage(), String.format(event.getFormat(), name, event.getMessage()));
         BukkitClient.sendMessage(chatMessage);
     }
 

@@ -5,6 +5,7 @@ import club.moddedminecraft.polychat.bukkitclient.BukkitClient;
 import club.moddedminecraft.polychat.networking.io.PlayerListMessage;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class ActivePlayerThread extends HeartbeatThread {
 
@@ -16,16 +17,10 @@ public class ActivePlayerThread extends HeartbeatThread {
     }
 
     @Override
-    protected void run() throws InterruptedException {
-        ArrayList<String> onlinePlayers = getPlayers();
+    protected void run() {
+        ArrayList<String> onlinePlayers = BukkitClient.getOnlinePlayersNames();
         PlayerListMessage message = new PlayerListMessage(serverID, onlinePlayers);
         BukkitClient.sendMessage(message);
-    }
-
-    private ArrayList<String> getPlayers() { //TODO
-        ArrayList<String> playerList = new ArrayList<>();
-        playerList = BukkitClient.getOnlinePlayersNames();
-        return playerList;
     }
 
 }

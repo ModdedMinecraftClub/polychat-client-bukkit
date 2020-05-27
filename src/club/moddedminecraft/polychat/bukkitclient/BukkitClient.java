@@ -91,7 +91,7 @@ public final class BukkitClient extends JavaPlugin implements Listener {
         handlePrefix();
 
         reattachThread = new ReattachThread(5000);
-        playerThread = new ActivePlayerThread(30000, properties.getProperty("server_id", "DEFAULT_ID"));
+        playerThread = new ActivePlayerThread(30000, id);
 
         handleClientConnection();
 
@@ -105,7 +105,7 @@ public final class BukkitClient extends JavaPlugin implements Listener {
         }));
 
         ServerInfoMessage infoMessage = new ServerInfoMessage(
-                BukkitClient.properties.getProperty("server_id", "DEFAULT_ID"),
+                id,
                 BukkitClient.properties.getProperty("server_name", "DEFAULT_NAME"),
                 BukkitClient.properties.getProperty("server_address", "DEFAULT_ADDRESS"),
                 BukkitClient.getMaxPlayers()
@@ -134,9 +134,9 @@ public final class BukkitClient extends JavaPlugin implements Listener {
                 commands.clear();
             }
         }, 0L, 20L);
-        if (!reattachKill) { //only start it on a fresh start, not on a reload
-            reattachThread.start();//actually start the thread at the end so the main thread is running already
-        }
+
+        reattachThread.start(); //start the thread at the end so the main thread is running already
+        playerThread.start();
     }
 
     @Override
@@ -155,7 +155,8 @@ public final class BukkitClient extends JavaPlugin implements Listener {
 
         messageBus.stop();
 
-        //TODO: Close Threads
+        playerThread.interrupt();
+        reattachThread.interrupt();
 
     }
 
@@ -209,8 +210,8 @@ public final class BukkitClient extends JavaPlugin implements Listener {
             if ((code < 0) || (code > 15)) {
                 code = 15;
             }
-            id = "[" + serverId + "]";
-            idFormatted = String.format("§%01x[%s]", code, serverId);
+            id = serverId;
+            idFormatted = String.format("§%01x%s", code, serverId);
         }
     }
 
